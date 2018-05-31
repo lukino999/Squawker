@@ -1,24 +1,25 @@
 /*
-* Copyright (C) 2017 The Android Open Source Project
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*  	http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright (C) 2017 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  	http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package android.example.com.squawker;
 
 import android.content.Intent;
 import android.database.Cursor;
 import android.example.com.squawker.following.FollowingPreferenceActivity;
+import android.example.com.squawker.following.FollowingPreferenceFragment;
 import android.example.com.squawker.provider.SquawkContract;
 import android.example.com.squawker.provider.SquawkProvider;
 import android.os.Bundle;
@@ -35,15 +36,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import timber.log.Timber;
+
 public class MainActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
-
-    private static String LOG_TAG = MainActivity.class.getSimpleName();
-    private static final int LOADER_ID_MESSAGES = 0;
-
-    RecyclerView mRecyclerView;
-    LinearLayoutManager mLayoutManager;
-    SquawkAdapter mAdapter;
 
     static final String[] MESSAGES_PROJECTION = {
             SquawkContract.COLUMN_AUTHOR,
@@ -51,11 +47,16 @@ public class MainActivity extends AppCompatActivity implements
             SquawkContract.COLUMN_DATE,
             SquawkContract.COLUMN_AUTHOR_KEY
     };
-
     static final int COL_NUM_AUTHOR = 0;
     static final int COL_NUM_MESSAGE = 1;
     static final int COL_NUM_DATE = 2;
     static final int COL_NUM_AUTHOR_KEY = 3;
+    private static final int LOADER_ID_MESSAGES = 0;
+    private static String LOG_TAG = MainActivity.class.getSimpleName();
+    RecyclerView mRecyclerView;
+    LinearLayoutManager mLayoutManager;
+    SquawkAdapter mAdapter;
+
 
 
     @Override
@@ -63,7 +64,10 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.squawks_recycler_view);
+        // plant timber
+        Timber.plant(new Timber.DebugTree());
+
+        mRecyclerView = findViewById(R.id.squawks_recycler_view);
 
         // Use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
@@ -117,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements
         // This method generates a selection off of only the current followers
         String selection = SquawkContract.createSelectionForCurrentFollowers(
                 PreferenceManager.getDefaultSharedPreferences(this));
-        Log.d(LOG_TAG, "Selection is " + selection);
+        Timber.d("Selection is %s", selection);
         return new CursorLoader(this, SquawkProvider.SquawkMessages.CONTENT_URI,
                 MESSAGES_PROJECTION, selection, null, SquawkContract.COLUMN_DATE + " DESC");
     }
